@@ -57,7 +57,7 @@ export class Telemetry {
 			const logLevel = config.getEnv('logs.level');
 
 			const { default: RudderStack } = await import('@rudderstack/rudder-sdk-node');
-			this.rudderStack = new RudderStack(key, url, { logLevel });
+			this.rudderStack = new RudderStack(key, { logLevel, dataPlaneUrl: url });
 
 			this.startPulse();
 		}
@@ -155,7 +155,7 @@ export class Telemetry {
 			await this.postHog.stop();
 
 			if (this.rudderStack) {
-				this.rudderStack.flush(resolve);
+				this.rudderStack.flush(() => resolve());
 			} else {
 				resolve();
 			}
@@ -190,7 +190,7 @@ export class Telemetry {
 		return new Promise<void>((resolve) => {
 			if (this.rudderStack) {
 				const { user_id } = properties;
-				const updatedProperties: ITelemetryTrackProperties = {
+				const updatedProperties = {
 					...properties,
 					instance_id: instanceId,
 					version_cli: N8N_VERSION,
